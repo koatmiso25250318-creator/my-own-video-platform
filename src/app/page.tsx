@@ -1,27 +1,19 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/auth";
+import { getAllCourses, type Course } from "@/lib/courses";
 import { CourseCard } from "@/components/CourseCard";
 
-// DB を参照するため常に動的レンダリング（ビルド時に DB 接続しない）
+// 保存済みデータを参照するため常に動的レンダリング（ビルド時に外部接続しない）
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const admin = await isAdmin();
 
-  let courses: {
-    id: string;
-    title: string;
-    description: string;
-    thumbnailUrl: string | null;
-  }[] = [];
+  let courses: Course[] = [];
   let dbError = false;
 
   try {
-    courses = await prisma.course.findMany({
-      orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, description: true, thumbnailUrl: true },
-    });
+    courses = await getAllCourses();
   } catch {
     dbError = true;
   }
@@ -47,10 +39,10 @@ export default async function HomePage() {
 
       {dbError ? (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
-          <p className="font-semibold">データベースに接続できませんでした。</p>
+          <p className="font-semibold">講座データを読み込めませんでした。</p>
           <p className="mt-1">
-            環境変数（POSTGRES_PRISMA_URL / POSTGRES_URL_NON_POOLING）の設定と
-            マイグレーションの適用を確認してください。README を参照してください。
+            画像・データストレージ（環境変数 BLOB_READ_WRITE_TOKEN）の設定を
+            確認してください。README を参照してください。
           </p>
         </div>
       ) : courses.length === 0 ? (

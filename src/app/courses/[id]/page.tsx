@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { getCourseById } from "@/lib/courses";
 import { isAdmin } from "@/lib/auth";
 import { Thumbnail } from "@/components/Thumbnail";
 import { DeleteCourseButton } from "@/components/DeleteCourseButton";
@@ -14,7 +14,7 @@ export default async function CourseDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const course = await prisma.course.findUnique({ where: { id } });
+  const course = await getCourseById(id);
   if (!course) {
     notFound();
   }

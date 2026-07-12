@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/auth";
 import { courseSchema } from "@/lib/validation";
+import { insertCourse, patchCourse, removeCourse } from "@/lib/courses";
 
 export type CourseFormState = {
   error?: string;
@@ -44,7 +44,7 @@ export async function createCourse(
   if (!parsed.success) {
     return { error: "入力内容を確認してください。", fieldErrors: toFieldErrors(parsed.error.issues) };
   }
-  const course = await prisma.course.create({ data: parsed.data });
+  const course = await insertCourse(parsed.data);
   revalidatePath("/");
   redirect(`/courses/${course.id}`);
 }
@@ -64,7 +64,10 @@ export async function updateCourse(
   if (!parsed.success) {
     return { error: "入力内容を確認してください。", fieldErrors: toFieldErrors(parsed.error.issues) };
   }
-  await prisma.course.update({ where: { id }, data: parsed.data });
+  const updated = await patchCourse(id, parsed.data);
+  if (!updated) {
+    return { error: "対象の講座が見つかりませんでした。" };
+  }
   revalidatePath("/");
   revalidatePath(`/courses/${id}`);
   redirect(`/courses/${id}`);
@@ -76,7 +79,7 @@ export async function deleteCourse(formData: FormData): Promise<void> {
   }
   const id = String(formData.get("id") ?? "");
   if (id) {
-    await prisma.course.delete({ where: { id } });
+    await removeCourse(id);
     revalidatePath("/");
   }
   redirect("/");

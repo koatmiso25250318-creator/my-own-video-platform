@@ -3,6 +3,9 @@
 動画講座を作成・公開できる学習プラットフォームです。
 ClaudeCodeマスターゼミ 第1期の課題（EP35 / EP36）として作成しました。
 
+- 🌐 **公開サイト（Production）**: https://my-own-video-platform-sepia.vercel.app
+- 📦 **GitHub リポジトリ**: https://github.com/koatmiso25250318-creator/my-own-video-platform
+
 ## 機能
 
 - 講座の一覧表示（サムネイル付きカードグリッド）
@@ -23,25 +26,27 @@ ClaudeCodeマスターゼミ 第1期の課題（EP35 / EP36）として作成し
 - **フレームワーク**: Next.js 15（App Router）
 - **言語**: TypeScript
 - **UI/CSS**: Tailwind CSS
-- **データベース**: Vercel Postgres（Neon）
-- **ORM**: Prisma
-- **画像ストレージ**: Vercel Blob（サーバー経由アップロード）
+- **データ保存**: Vercel Blob（講座データを JSON、サムネイル画像をファイルとして保存）
 - **入力検証**: zod
+- **認証**: 管理者パスワードによる簡易ゲート（Cookieセッション）
+- **ホスティング**: Vercel
 - **パッケージマネージャー**: npm
 
 ## データモデル
 
-`Course`（`prisma/schema.prisma`）
+講座データは Vercel Blob 上の `data/courses.json`（`Course[]`）として永続化します。
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| id | String (cuid) | 主キー |
-| title | String | 講座タイトル |
-| description | String | 講座の説明 |
-| videoUrl | String? | 動画URL（任意） |
-| thumbnailUrl | String? | サムネイル画像URL（EP35で追加。未設定でも表示可能） |
-| createdAt | DateTime | 作成日時 |
-| updatedAt | DateTime | 更新日時 |
+| id | string (uuid) | 主キー |
+| title | string | 講座タイトル |
+| description | string | 講座の説明 |
+| videoUrl | string \| null | 動画URL（任意。YouTubeは埋め込み表示） |
+| thumbnailUrl | string \| null | サムネイル画像URL（EP35で追加。未設定でもフォールバック表示） |
+| createdAt | string (ISO8601) | 作成日時 |
+| updatedAt | string (ISO8601) | 更新日時 |
+
+> サムネイル画像は Vercel Blob の `thumbnails/<uuid>.<ext>` に公開ファイルとして保存されます。
 
 ## 必要な環境変数（変数名のみ）
 
@@ -49,12 +54,10 @@ ClaudeCodeマスターゼミ 第1期の課題（EP35 / EP36）として作成し
 
 | 変数名 | 用途 |
 | --- | --- |
-| `POSTGRES_PRISMA_URL` | 講座データ用DB接続（Prisma 経由 / プール接続） |
-| `POSTGRES_URL_NON_POOLING` | マイグレーション用の直接接続 |
-| `BLOB_READ_WRITE_TOKEN` | サムネイル画像の保存（サーバー側のみ使用） |
+| `BLOB_READ_WRITE_TOKEN` | 講座データ(JSON)とサムネイル画像の保存（サーバー側のみ使用） |
 | `ADMIN_PASSWORD` | 講座の作成・編集・アップロードを保護する管理者パスワード |
 
-> ⚠️ 実値（トークン・パスワード・接続文字列）は、コード・README・Git に含めないでください。
+> ⚠️ 実値（トークン・パスワード）は、コード・README・Git に含めないでください。
 
 ## ローカル起動
 
@@ -62,54 +65,48 @@ ClaudeCodeマスターゼミ 第1期の課題（EP35 / EP36）として作成し
 # 1. 依存関係をインストール
 npm install
 
-# 2. 環境変数を用意（Vercel でストレージ作成後に取得するのが簡単）
-#    Vercel プロジェクトに link 済みなら:
+# 2. 環境変数を用意（Vercel に link 済みなら CLI で取得できる）
 npx vercel env pull .env.local
-#    もしくは .env.example をコピーして手動で値を設定:
-#    cp .env.example .env.local
+#    もしくは .env.example をコピーして手動で値を設定
 
-# 3. データベースにスキーマを適用（初回のみ）
-npx prisma migrate deploy   # 既存のマイグレーションを適用
-#    もしくは開発中にスキーマを直接反映:
-#    npm run db:push
-
-# 4. 開発サーバー起動
+# 3. 開発サーバー起動
 npm run dev
 # http://localhost:3000
 ```
 
 管理操作（作成・編集・アップロード）を行うには、`/admin/login` で `ADMIN_PASSWORD` を入力してログインします。
 
-## データベースマイグレーション手順
+## 検証コマンド
 
-スキーマ定義は `prisma/schema.prisma`、マイグレーションは `prisma/migrations/` にあります。
+```bash
+npm run lint       # ESLint
+npm run typecheck  # 型チェック
+npm run build      # 本番ビルド
+```
 
-- 本番/プレビューへの適用: `npx prisma migrate deploy`
-  （本アプリの `build` スクリプトに含まれており、Vercel デプロイ時に自動適用されます）
-- スキーマを変更した場合: `npx prisma migrate dev --name <変更名>` でマイグレーションを追加
+## Vercel への公開（EP36）
 
-既存講座は `thumbnailUrl` 未設定でもプレースホルダーで正常表示されます（後方互換）。
+このプロジェクトは Vercel CLI でデプロイしています。
 
-## Vercel への公開
+```bash
+# 初回のみ: プロジェクトを link
+npx vercel link
 
-1. GitHub リポジトリに push
-2. Vercel でプロジェクトを import（または `npx vercel link`）
-3. Vercel Dashboard の **Storage** で以下を作成・接続
-   - **Postgres**（→ `POSTGRES_PRISMA_URL` / `POSTGRES_URL_NON_POOLING` が自動設定）
-   - **Blob**（→ `BLOB_READ_WRITE_TOKEN` が自動設定）
-4. **Settings → Environment Variables** で `ADMIN_PASSWORD` を設定
-5. Preview デプロイ: `npx vercel`
-6. 動作確認後、Production デプロイ: `npx vercel --prod`
+# Blob ストアを作成・接続（環境変数 BLOB_READ_WRITE_TOKEN が自動設定される）
+npx vercel blob create-store <store-name> --access public --yes
 
-`build` スクリプトが `prisma migrate deploy` を実行するため、デプロイ時にDBスキーマが自動適用されます。
+# 管理者パスワードを設定
+npx vercel env add ADMIN_PASSWORD production --value <パスワード>
+
+# 本番公開
+npx vercel deploy --prod
+```
+
+環境変数を変更した場合は、反映のため再デプロイが必要です。
 
 ## セキュリティ上の注意
 
-- 秘密情報（トークン・パスワード・接続文字列）は絶対にコミットしないでください。
+- 秘密情報（トークン・パスワード）は絶対にコミットしないでください（`.gitignore` 済み）。
 - 画像アップロードは管理者ログイン必須です（無認証の公開アップロード口は作っていません）。
 - 本アプリの認証は課題デモ用の簡易パスワード方式です。実運用では正式な認証基盤の導入を検討してください。
-
-## Production URL / GitHub リポジトリ
-
-- Production URL: （公開後に記載）
-- GitHub リポジトリ: （作成後に記載）
+- 講座データは公開 Blob に保存されるため、機微な情報は登録しないでください。

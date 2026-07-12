@@ -40,3 +40,6 @@ yarn-error.log*
 /*.pptx
 /EP36_ClaudeCode_Cursor_実行プロンプト.md
 /database_schema_explanation_submission_travel_itinerary.md
+
+.vercel
+.env*

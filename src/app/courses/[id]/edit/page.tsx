@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { getCourseById } from "@/lib/courses";
 import { isAdmin } from "@/lib/auth";
 import { CourseForm } from "@/components/CourseForm";
 import { updateCourse } from "@/app/courses/actions";
@@ -16,7 +16,7 @@ export default async function EditCoursePage({
     redirect("/admin/login");
   }
   const { id } = await params;
-  const course = await prisma.course.findUnique({ where: { id } });
+  const course = await getCourseById(id);
   if (!course) {
     notFound();
   }
