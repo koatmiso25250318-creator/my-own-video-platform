@@ -1,0 +1,42 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production build
+/build
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+*.tsbuildinfo
+
+# env files (実値はコミットしない)
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# prisma generated client
+/src/generated
+
+# 課題資料・配布物（アプリ本体ではないためコミットしない）
+/*.docx
+/*.pptx
+/EP36_ClaudeCode_Cursor_実行プロンプト.md
+/database_schema_explanation_submission_travel_itinerary.md
