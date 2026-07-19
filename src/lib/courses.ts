@@ -2,6 +2,7 @@ import "server-only";
 import crypto from "crypto";
 import { list, put } from "@vercel/blob";
 import type { CourseInput } from "@/lib/validation";
+import { deleteThumbnail } from "@/lib/blob";
 
 // 講座データは Vercel Blob 上の JSON ファイル1つで永続化する。
 // （課題デモ用途・単一管理者前提。講座情報は公開情報のため公開 Blob で問題ない）
@@ -98,4 +99,18 @@ export async function removeCourse(id: string): Promise<void> {
   if (next.length !== courses.length) {
     await saveAllCourses(next);
   }
+}
+
+/**
+ * 指定したサムネイルURLが、どの講座からも参照されていなければ Blob を削除する。
+ * 差し替え・削除後の孤立Blob掃除に使う（参照が残っていれば削除しない＝安全側）。
+ * 呼び出し元では「新URLの保存が成功した後」に実行すること。
+ */
+export async function cleanupUnreferencedThumbnail(
+  url: string | null | undefined
+): Promise<void> {
+  if (!url) return;
+  const courses = await getAllCourses();
+  if (courses.some((c) => c.thumbnailUrl === url)) return;
+  await deleteThumbnail(url);
 }

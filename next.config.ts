@@ -1,9 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // サムネイルは <img> + object-fit で表示し、レイアウトシフトを抑えるため
-  // 画像最適化ドメイン設定は不要。将来 next/image を使う場合はここに
-  // images.remotePatterns で Vercel Blob ドメインを追加する。
+  images: {
+    // Vercel Blob の公開ドメインのみを最小許可（任意ホストは許可しない）。
+    // 例: https://<storeId>.public.blob.vercel-storage.com/thumbnails/<uuid>.png
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

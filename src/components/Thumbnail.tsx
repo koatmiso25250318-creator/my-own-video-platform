@@ -1,34 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type Props = {
   src?: string | null;
   alt: string;
   className?: string;
   priority?: boolean;
+  sizes?: string;
 };
 
 /**
  * 16:9 のアスペクト比を確保してレイアウトシフトを抑えたサムネイル表示。
- * 画像が未設定、または読み込み失敗時はプレースホルダーを表示する。
+ * - 恒久URL(https)は next/image で最適化表示（remotePatterns で許可済み）
+ * - ローカルプレビュー(blob:/data:)は最適化を無効化してそのまま表示
+ * - 画像が未設定 or 読み込み失敗時はプレースホルダー（onError の無限ループを防止）
  */
-export function Thumbnail({ src, alt, className, priority }: Props) {
+export function Thumbnail({ src, alt, className, priority, sizes }: Props) {
   const [failed, setFailed] = useState(false);
+
+  // src が差し替わったらエラー状態をリセット（新しい画像を再評価する）
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
   const showImage = Boolean(src) && !failed;
+  const isLocalPreview =
+    typeof src === "string" && (src.startsWith("blob:") || src.startsWith("data:"));
 
   return (
     <div
       className={`relative aspect-video w-full overflow-hidden bg-slate-100 ${className ?? ""}`}
     >
       {showImage ? (
-        // next/image ではなく <img> を使用（Blob ドメイン設定不要・onError でフォールバック可能）
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={src as string}
           alt={alt}
-          className="absolute inset-0 h-full w-full object-cover"
-          loading={priority ? "eager" : "lazy"}
+          fill
+          sizes={sizes ?? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+          className="object-cover"
+          priority={priority}
+          unoptimized={isLocalPreview}
           onError={() => setFailed(true)}
         />
       ) : (

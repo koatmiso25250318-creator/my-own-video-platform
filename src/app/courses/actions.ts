@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { courseSchema } from "@/lib/validation";
-import { insertCourse, patchCourse, removeCourse } from "@/lib/courses";
+import {
+  insertCourse,
+  patchCourse,
+  removeCourse,
+  getCourseById,
+  cleanupUnreferencedThumbnail,
+} from "@/lib/courses";
 
 export type CourseFormState = {
   error?: string;
@@ -64,9 +70,15 @@ export async function updateCourse(
   if (!parsed.success) {
     return { error: "入力内容を確認してください。", fieldErrors: toFieldErrors(parsed.error.issues) };
   }
+  // 差し替え前の旧サムネイルURLを控える
+  const before = await getCourseById(id);
   const updated = await patchCourse(id, parsed.data);
   if (!updated) {
     return { error: "対象の講座が見つかりませんでした。" };
+  }
+  // 新URLの保存が成功した後で、差し替えられた旧サムネイルが未参照なら掃除する
+  if (before?.thumbnailUrl && before.thumbnailUrl !== updated.thumbnailUrl) {
+    await cleanupUnreferencedThumbnail(before.thumbnailUrl);
   }
   revalidatePath("/");
   revalidatePath(`/courses/${id}`);
@@ -79,7 +91,12 @@ export async function deleteCourse(formData: FormData): Promise<void> {
   }
   const id = String(formData.get("id") ?? "");
   if (id) {
+    const before = await getCourseById(id);
     await removeCourse(id);
+    // 削除した講座のサムネイルが他講座から参照されていなければ掃除する
+    if (before?.thumbnailUrl) {
+      await cleanupUnreferencedThumbnail(before.thumbnailUrl);
+    }
     revalidatePath("/");
   }
   redirect("/");
