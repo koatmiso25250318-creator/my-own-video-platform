@@ -25,7 +25,7 @@ function SubmitButton({ label, disabled }: { label: string; disabled: boolean })
     <button
       type="submit"
       disabled={pending || disabled}
-      className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "保存中…" : disabled ? "アップロード完了までお待ちください" : label}
     </button>
@@ -62,7 +62,7 @@ export function CourseForm({ action, initial, submitLabel }: Props) {
           maxLength={120}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="例: はじめての Next.js 入門"
         />
         {fieldError("title") && (
@@ -81,7 +81,7 @@ export function CourseForm({ action, initial, submitLabel }: Props) {
           rows={5}
           maxLength={4000}
           defaultValue={initial?.description ?? ""}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="この講座で学べる内容を入力してください。"
         />
         {fieldError("description") && (
@@ -98,7 +98,7 @@ export function CourseForm({ action, initial, submitLabel }: Props) {
           name="videoUrl"
           type="url"
           defaultValue={initial?.videoUrl ?? ""}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="https://www.youtube.com/watch?v=..."
         />
         {fieldError("videoUrl") && (

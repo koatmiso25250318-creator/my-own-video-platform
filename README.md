@@ -6,6 +6,18 @@ ClaudeCodeマスターゼミ 第1期の課題（EP35 / EP36）として作成し
 - 🌐 **公開サイト（Production）**: https://my-own-video-platform-sepia.vercel.app
 - 📦 **GitHub リポジトリ**: https://github.com/koatmiso25250318-creator/my-own-video-platform
 
+## 更新内容（EP37 / EP38）
+
+- **EP37: Vercel Blob 連携の整備**
+  - 既存の公開 Blob store（重複作成なし）を再利用し、サムネイル画像と講座データ(JSON)を保存。
+  - `BLOB_READ_WRITE_TOKEN` はサーバー側のみで使用し、クライアントへ露出しない。
+  - Production / Preview / Development すべてに環境変数を設定済み。
+  - **孤立 Blob の掃除**: 画像の差し替え・講座削除時に、どの講座からも参照されなくなった旧サムネイルを安全に削除（参照が残る場合は削除しない）。
+- **EP38: 画像表示の堅牢化とデザイン改善**
+  - サムネイル表示を **next/image** に移行し、`remotePatterns` で Vercel Blob ドメインのみを最小許可。16:9・`object-fit: cover`・`fill`＋`sizes` でレイアウトシフトを抑制し最適化。
+  - 画像未設定・読み込み失敗時は安全なプレースホルダーへフォールバック（`onError` の無限ループを防止）。差し替えは常に新しい URL のため、CDN キャッシュに古い画像が残らない。
+  - Hero セクション、ブランドアクセントカラー、カード/詳細（パンくず・公開日）、ドラッグ&ドロップ対応のアップロードUI、ローディング/404 状態、フォーカス可視化・`aria-live` などの UI/UX・アクセシビリティ改善。
+
 ## 機能
 
 - 講座の一覧表示（サムネイル付きカードグリッド）

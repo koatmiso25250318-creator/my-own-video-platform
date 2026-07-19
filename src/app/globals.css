@@ -9,3 +9,16 @@
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
 }
+
+/* キーボード操作時のフォーカスを常に見えるようにする */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-50;
+  }
+}
+
+::selection {
+  @apply bg-indigo-600 text-white;
+}

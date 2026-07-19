@@ -5,8 +5,8 @@ import { isAdmin } from "@/lib/auth";
 import { logoutAction } from "@/app/admin/actions";
 
 export const metadata: Metadata = {
-  title: "My Video Platform — 講座プラットフォーム",
-  description: "動画講座を作成・公開できる学習プラットフォーム",
+  title: "My Video Platform — 動画講座プラットフォーム",
+  description: "動画講座を作成・公開・学習できるプラットフォーム",
 };
 
 export default async function RootLayout({
@@ -20,31 +20,43 @@ export default async function RootLayout({
     <html lang="ja">
       <body>
         <div className="flex min-h-screen flex-col">
-          <header className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-              <Link href="/" className="text-lg font-bold text-slate-900">
-                🎬 My Video Platform
+          <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+            <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5">
+              <Link
+                href="/"
+                className="flex items-center gap-2 rounded-md text-lg font-bold text-slate-900"
+              >
+                <span aria-hidden="true">🎬</span>
+                <span>
+                  My Video<span className="text-indigo-600">Platform</span>
+                </span>
               </Link>
-              <nav className="flex items-center gap-4 text-sm">
+              <nav className="flex items-center gap-3 text-sm">
                 {admin ? (
                   <>
+                    <span className="hidden rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 sm:inline">
+                      管理者
+                    </span>
                     <Link
                       href="/courses/new"
-                      className="rounded-md bg-slate-900 px-3 py-1.5 font-medium text-white hover:bg-slate-700"
+                      className="rounded-md bg-indigo-600 px-3 py-1.5 font-medium text-white shadow-sm transition hover:bg-indigo-700"
                     >
                       ＋ 講座を作成
                     </Link>
                     <form action={logoutAction}>
                       <button
                         type="submit"
-                        className="text-slate-500 hover:text-slate-800"
+                        className="rounded-md px-2 py-1.5 text-slate-500 transition hover:text-slate-800"
                       >
                         ログアウト
                       </button>
                     </form>
                   </>
                 ) : (
-                  <Link href="/admin/login" className="text-slate-500 hover:text-slate-800">
+                  <Link
+                    href="/admin/login"
+                    className="rounded-md px-2 py-1.5 text-slate-500 transition hover:text-slate-800"
+                  >
                     管理者ログイン
                   </Link>
                 )}
@@ -55,8 +67,9 @@ export default async function RootLayout({
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
 
           <footer className="border-t border-slate-200 bg-white">
-            <div className="mx-auto max-w-5xl px-4 py-6 text-center text-xs text-slate-400">
-              My Video Platform — ClaudeCodeマスターゼミ 課題 (EP35 / EP36)
+            <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-slate-400 sm:flex-row">
+              <span>🎬 My Video Platform</span>
+              <span>ClaudeCodeマスターゼミ 課題（EP35–EP38）</span>
             </div>
           </footer>
         </div>
